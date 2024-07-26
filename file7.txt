@@ -1,0 +1,71 @@
+1. Write Mongo query to retrieve documents from the orders in ascending order by total.
+Ans:  db.orders.aggregate([{$sort:{_id:1}}])
+
+2. Write Mongo query to retrieve the oldest paymentMethod from the payments collection as "_id".
+ans: db.payments.aggregate([{$sort:{payment_date:1}},{$group:{_id:"$paymentMethod",old_date:{$first:"$payment_date"}}},{$limit:1},{$project:{_id:1}}])
+
+3. Write Mongo query to retrieve 2nd and 3rd buyers from the buyers collection.
+ans: db.buyers.aggregate([{$skip:1},{$limit:1}])
+
+4. Write Mongo query to retrieve the most Expensive product from order_details.
+ans: db.order_details.aggregate([{$lookup:{from:"products",localField:"product_id",foreignField:"_id",as:"product_data"}},{$unwind:"$product_data"},{$sort:{price:-1}},{$project:{product_data:{name:1}}},{$limit:1}])
+
+5.Write Mongo query to retrieve the first order from the orders as per the order_date.
+Ans: db.orders.aggregate([{$sort:{order_date:1}},{$limit:1}])
+
+6. Write Mongo query to retrieve the last 3 orders from the orders collection who have less total amount.
+Ans: db.orders.aggregate([{$sort:{total:1}},{$limit:3}])
+
+7. Write Mongo query to retrieve the most recent shipped order from the orders collection.
+ans: db.orders.aggregate([{$sort:{ship_date:-1}},{$limit:1}])
+
+8. Write Mongo query to get the total revenue from all orders
+Ans:  db.orders.aggregate([{$group:{_id:null,total_revenue:{$sum:"$total"}}}])
+
+9. Write Mongo query to retrieve all the orders that shipped before 2022-05-26.
+Ans: db.orders.aggregate([ { $match: { ship_date: { $lt:"2022-05-26" } } }] )
+
+10. Write Mongo query to find the maximum price as maxPrice of products and their names as name for each category.
+Ans: db.products.aggregate([{$lookup:{from:"categories",localField:"category_id",foreignField:"_id",as:"cate_data"}},{$unwind:"$cate_data"},{$group:{_id:"$cate_data.name",maxPrice:{$max:"$price"},products:{$push:{name:"$name",price:"$price"}}}},{$unwind:"$products"},{$match:{$expr:{$eq:["$maxPrice","$products.price"]}}},{$project:{name:"$products.name", price:"$products.price"}}])
+
+
+11. Write Mongo query to find Most used payment Method as paymentMethod and the number of time it is used as count.
+Ans: db.payments.aggregate([{$group:{_id:"$paymentMethod",count:{$sum:1}}},{$sort:{count:-1}},{$limit:1},{$project:{_id:1,count:1}}])
+
+12. Write Mongo query to find the total count of orders by status.
+Ans: db.orders.aggregate([{$group:{_id:"$status",count:{$sum:1}}}])
+
+14. Assess the impact of RAM capacity on laptop prices and ratings. Group laptops by RAM capacity and analyze the average price and rating for each group. Identify any significant trends or outliers.
+Ans: db.laptops.aggregate([
+  {
+    $group: {
+      _id: "$ram_memory",
+      avgPrice: { $avg: "$Price" },
+      avgRating: { $avg: "$Rating" },
+      count: { $sum: 1 }
+    }
+  },
+  {
+    $sort: { _id: 1 }  
+  }
+])
+
+15. Investigate the price and rating distribution for gaming laptops. Identify which brands are leading in the gaming laptop market by comparing the average price, rating, GPU type, and RAM capacity for laptops categorized as gaming.
+ans: db.laptops.aggregate([
+  
+  {
+    $group: {
+      _id: "$brand",
+      avgPrice: { $avg: "$Price" },
+      avgRating: { $avg: "$Rating" },
+      avgRam: { $avg: "$ram_memory" },
+      gpuTypes: { $addToSet: "$gpu_brand" },
+      count: { $sum: 1 }
+    }
+  },
+  {
+    $sort: { avgRating: -1 }  
+  }
+])
+
+
